@@ -3,7 +3,8 @@
     [om.core :as om :include-macros true]
     [om.dom :as dom :include-macros true]
     [bidi.bidi :refer [match-route path-for]]
-    [website.routes :refer [routes]]))
+    [website.routes :refer [routes]]
+    [website.om-helpers]))
 
 (defn custom-renderer [{:keys [route] :as state}]
   (let [{:keys [handler]} route]
@@ -35,8 +36,14 @@
                       :onClick #(navigate data :article-index %)}
                  "Articles"))
         (dom/pre nil (pr-str data))))))
+
 (defn site-renderer [data]
   {:title "Untitled"
    :body  (dom/render-to-str (om/build site data))})
 (defn render-in-browser []
-  (om/root site {:route (match-route routes js/location.pathname)} {:target (js/document.querySelector "body > main")}))
+  (om/root website.om-helpers/in-browser-site
+           {:route (match-route routes js/location.pathname)}
+           {:target (js/document.querySelector "body > main")
+            :opts {:view site
+                   :route-key :route
+                   :routes routes}}))

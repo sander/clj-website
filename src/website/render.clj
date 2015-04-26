@@ -1,7 +1,8 @@
 (ns website.render
   (:require
    [cljs.closure]
-   [cognitect.transit :as transit])
+   [cognitect.transit :as transit]
+   [bidi.bidi :refer [match-route]])
   (:import
    [java.io ByteArrayInputStream ByteArrayOutputStream]
    [javax.script ScriptEngineManager ScriptEngine Invocable]))
@@ -36,3 +37,14 @@
 (comment
   (def r (renderer 'website.core/custom-renderer))
   (r {:da :ta}))
+
+(defn render-handler [template renderer routes {:keys [uri]}]
+  (if-let [route (match-route routes uri)]
+    (let [result (renderer {:route route})]
+      {:status  200
+       :headers {"Content-Type" "text/html; charset=UTF-8"}
+       :body    (template result)})))
+
+(defn wrap-renderer [handler template renderer routes]
+  (let [rnd (website.render/renderer renderer)]
+    #(or (render-handler template rnd routes %) (handler %))))
