@@ -9,6 +9,8 @@
         handler (match-route routes path)]
     (om/update! data route-key {:handler handler})))
 
+(defn pop-state-handler [owner] (om/get-state owner [:on-pop-state]))
+
 (defn in-browser-site [data owner {:keys [view route-key routes]}]
   (reify
     om/IInitState
@@ -16,10 +18,10 @@
       {:on-pop-state (partial on-pop-state data route-key routes)})
     om/IWillMount
     (will-mount [_]
-      (js/addEventListener "popstate" (om/get-state owner [:on-pop-state])))
+      (js/addEventListener "popstate" (pop-state-handler owner)))
     om/IWillUnmount
     (will-unmount [_]
-      (js/removeEventListener "popstate" (om/get-state owner [:on-pop-state])))
+      (js/removeEventListener "popstate" (pop-state-handler owner)))
     om/IRender
     (render [_]
       (om/build view data))))
