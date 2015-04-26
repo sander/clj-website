@@ -2,8 +2,8 @@
   (:require
     [om.core :as om :include-macros true]
     [om.dom :as dom :include-macros true]
-    [bidi.bidi :refer [match-route]]
-    website.routes))
+    [bidi.bidi :refer [match-route path-for]]
+    [website.routes :refer [routes]]))
 
 (defn custom-renderer [{:keys [route] :as state}]
   (let [{:keys [handler]} route]
@@ -12,6 +12,11 @@
      :body
             (str "<h1>" (name handler) "</h1>"
                  "<pre>" (.replace (pr-str state) \< "&lt;") "</pre>")}))
+
+(defn navigate [data handler ev]
+  (if ev (.preventDefault ev))
+  (js/history.pushState nil "" (path-for website.routes/routes handler))
+  (om/update! data :route {:handler handler}))
 
 (defn site [data owner]
   (reify
@@ -23,11 +28,15 @@
              :onMouseOut #(om/set-state! owner :hover? false)}
         (dom/nav
           nil
-          (dom/a #js {:href "/index.html"} "Home")
-          (dom/a #js {:href "/articles/index.html"} "Articles"))
+          (dom/a #js {:href (path-for routes :index)
+                      :onClick #(navigate data :index %)}
+                 "Home")
+          (dom/a #js {:href    (path-for routes :article-index)
+                      :onClick #(navigate data :article-index %)}
+                 "Articles"))
         (dom/pre nil (pr-str data))))))
 (defn site-renderer [data]
   {:title "Untitled"
    :body  (dom/render-to-str (om/build site data))})
 (defn render-in-browser []
-  (om/root site {:route (match-route website.routes/routes js/location.pathname)} {:target (js/document.querySelector "body > main")}))
+  (om/root site {:route (match-route routes js/location.pathname)} {:target (js/document.querySelector "body > main")}))
