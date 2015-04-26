@@ -5,26 +5,36 @@
     [bidi.ring :refer [make-handler]]
     [bidi.bidi :refer [match-route]]
     [net.cgrand.enlive-html :as html]
+    [compojure.core :refer [defroutes]]
+    [compojure.route :refer [resources]]
     website.routes
     website.render))
 
-(def renderer (website.render/renderer 'website.core/custom-renderer))
+(def renderer (website.render/renderer 'website.core/site-renderer))
 
 (html/deftemplate
   page (io/resource "page.html")
   [title body]
   [:head :title] (html/content title)
-  [:body] (html/html-content body))
+  [:main] (html/html-content body))
 
-(defn handler [{:keys [uri]}]
+(defroutes
+  routes
+  (resources "/"))
+
+(defn render-handler [{:keys [uri]}]
   (if-let [route (match-route website.routes/routes uri)]
-    (let [{:keys [title body]} (renderer route)]
+    (let [{:keys [title body]} (renderer {:route route})]
       {:status  200
        :headers {"Content-Type" "text/html; charset=UTF-8"}
-       :body    (page title body)})
-    {:status  404
-     :headers {"Content-Type" "text/html; charset=UTF-8"}
-     :body    "Not found"}))
+       :body    (page title body)})))
+
+(defn wrap-renderer [handler]
+  #(or (render-handler %) (handler %)))
+
+(def app
+  (-> routes
+      (wrap-renderer)))
 
 (defn start []
-  (defonce server (run-jetty #'handler {:port 3000 :join? false})))
+  (def server (run-jetty #'app {:port 3000 :join? false})))
