@@ -13,7 +13,8 @@
   :plugins
   [[lein-cljsbuild "1.0.5"]]
 
-  :cljsbuild
+  #_:cljsbuild
+  #_
   {:builds
    {:prerender
     {:source-paths ["src"]

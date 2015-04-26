@@ -17,11 +17,14 @@
   [:body] (html/html-content body))
 
 (defn handler [{:keys [uri]}]
-  (let [route (match-route website.routes/routes uri)
-        {:keys [title body]} (renderer route)]
-    {:status  200
+  (if-let [route (match-route website.routes/routes uri)]
+    (let [{:keys [title body]} (renderer route)]
+      {:status  200
+       :headers {"Content-Type" "text/html; charset=UTF-8"}
+       :body    (page title body)})
+    {:status  404
      :headers {"Content-Type" "text/html; charset=UTF-8"}
-     :body    (page title body)}))
+     :body    "Not found"}))
 
 (defn start []
   (defonce server (run-jetty #'handler {:port 3000 :join? false})))
