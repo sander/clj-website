@@ -10,3 +10,5 @@ pom.xml.asc
 .hgignore
 .hg/
 /out
+/resources/public/js/out
+/resources/public/js/main.js
