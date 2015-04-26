@@ -6,7 +6,9 @@
    [org.clojure/clojurescript "0.0-3211"]
    [com.cognitect/transit-clj "0.8.271"]
    [com.cognitect/transit-cljs "0.8.207"]
-   [ring "1.3.2"]]
+   [ring "1.3.2"]
+   [bidi "1.18.10"]
+   [enlive "1.1.5"]]
 
   :plugins
   [[lein-cljsbuild "1.0.5"]]

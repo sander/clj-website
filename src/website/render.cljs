@@ -19,4 +19,4 @@
   (let [{:keys [symbol state]} (deserialize json)
         [ns renderer aap] (compile-symbol symbol)
         result (.call (aget ns renderer) ns state)]
-    (serialize {:result result})))
+    (serialize result)))
